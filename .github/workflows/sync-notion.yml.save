@@ -1,0 +1,34 @@
+name: Sync Notion Notes
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+
+      - run: npm run sync-notion
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+
+      - name: Commit changes
+        run: |
+          git config user.name "notion-sync-bot"
+          git config user.email "actions@github.com"
+          git add src/content/docs
+          git diff --staged --quiet || git commit -m "chore: sync notes from Notion"
+          git push

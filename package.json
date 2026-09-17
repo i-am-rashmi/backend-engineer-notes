@@ -1,0 +1,13 @@
+{
+  "name": "backend-engineer-notes",
+  "version": "1.0.0",
+  "scripts": {
+    "sync-notion": "node scripts/sync-notion.mjs"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "fs-extra": "^11.4.0",
+    "gray-matter": "^4.0.3",
+    "notion-to-md": "^3.1.9"
+  }
+}
