@@ -7,7 +7,7 @@ const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
 const DATABASE_ID = process.env.NOTION_DATABASE_ID;
-const OUT_DIR = "src/content/docs";
+const OUT_DIR = "docs";
 
 function slugify(str) {
   return str
@@ -17,15 +17,42 @@ function slugify(str) {
     .replace(/\s+/g, "-");
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withRetry(fn, { retries = 5, baseDelayMs = 1000 } = {}) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const isRateLimited = err?.code === "rate_limited" || err?.status === 429;
+      if (!isRateLimited || attempt === retries) throw err;
+
+      const retryAfterHeader = err?.headers?.get?.("retry-after");
+      const retryAfterMs = retryAfterHeader
+        ? Number(retryAfterHeader) * 1000
+        : baseDelayMs * Math.pow(2, attempt);
+
+      console.log(
+        `Rate limited. Retrying in ${retryAfterMs}ms (attempt ${attempt + 1}/${retries})...`
+      );
+      await sleep(retryAfterMs);
+    }
+  }
+}
+
 async function run() {
   const pages = [];
   let cursor;
 
   do {
-    const res = await notion.databases.query({
-      database_id: DATABASE_ID,
-      start_cursor: cursor,
-    });
+    const res = await withRetry(() =>
+      notion.databases.query({
+        database_id: DATABASE_ID,
+        start_cursor: cursor,
+      })
+    );
     pages.push(...res.results);
     cursor = res.has_more ? res.next_cursor : undefined;
   } while (cursor);
@@ -38,13 +65,13 @@ async function run() {
     );
     const title = titleProp?.title?.[0]?.plain_text || "Untitled";
 
-    // Optional: use a "Category" select property as a subfolder
-    const categoryProp = page.properties["Category"];
-    const category = categoryProp?.select?.name
-      ? slugify(categoryProp.select.name)
+    // Changed from "Category" to "Field"
+    const fieldProp = page.properties["Field"];
+    const category = fieldProp?.select?.name
+      ? slugify(fieldProp.select.name)
       : "general";
 
-    const mdBlocks = await n2m.pageToMarkdown(page.id);
+    const mdBlocks = await withRetry(() => n2m.pageToMarkdown(page.id));
     const mdString = n2m.toMarkdownString(mdBlocks).parent;
 
     const frontmatter = `---
@@ -58,6 +85,8 @@ title: "${title.replace(/"/g, '\\"')}"
     const filePath = path.join(dir, `${slugify(title)}.md`);
     await fs.writeFile(filePath, frontmatter + mdString);
     console.log(`Wrote ${filePath}`);
+
+    await sleep(350);
   }
 }
 
