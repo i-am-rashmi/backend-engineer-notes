@@ -7,7 +7,7 @@ const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
 const DATABASE_ID = process.env.NOTION_DATABASE_ID;
-const OUT_DIR = "docs";
+const OUT_DIR = "src/content/docs";
 
 function slugify(str) {
   return str
