@@ -1,13 +1,25 @@
 {
   "name": "backend-engineer-notes",
+  "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "sync-notion": "node scripts/sync-notion.mjs"
+    "sync-notion": "node scripts/sync-notion.mjs",
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
   },
   "dependencies": {
     "@notionhq/client": "^2.2.15",
     "fs-extra": "^11.4.0",
     "gray-matter": "^4.0.3",
-    "notion-to-md": "^3.1.9"
+    "notion-to-md": "^3.1.9",
+    "@astrojs/starlight": "^0.42.1",
+    "astro": "^7.2.10",
+    "sharp": "^0.35.3"
+  },
+  "allowScripts": {
+    "esbuild": true
   }
 }

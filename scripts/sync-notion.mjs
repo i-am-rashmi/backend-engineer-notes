@@ -17,6 +17,13 @@ function slugify(str) {
     .replace(/\s+/g, "-");
 }
 
+function titleCase(slug) {
+  return slug
+    .split("-")
+    .map((w) => w[0].toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -59,17 +66,20 @@ async function run() {
 
   await fs.ensureDir(OUT_DIR);
 
+  const categoriesUsed = new Set();
+
   for (const page of pages) {
     const titleProp = Object.values(page.properties).find(
       (p) => p.type === "title"
     );
     const title = titleProp?.title?.[0]?.plain_text || "Untitled";
 
-    // Changed from "Category" to "Field"
     const fieldProp = page.properties["Field"];
     const category = fieldProp?.select?.name
       ? slugify(fieldProp.select.name)
       : "general";
+
+    categoriesUsed.add(category);
 
     const mdBlocks = await withRetry(() => n2m.pageToMarkdown(page.id));
     const mdString = n2m.toMarkdownString(mdBlocks).parent;
@@ -88,6 +98,26 @@ title: "${title.replace(/"/g, '\\"')}"
 
     await sleep(350);
   }
+
+  // Generate (or refresh) a landing/index page for every category found this run
+  for (const category of categoriesUsed) {
+    const indexPath = path.join(OUT_DIR, category, "index.md");
+    // Don't overwrite if you've hand-edited it already
+    const alreadyExists = await fs.pathExists(indexPath);
+    if (!alreadyExists) {
+      const stubContent = `---
+title: "${titleCase(category)}"
+description: "Notes on ${titleCase(category)}."
+---
+
+Browse the notes in this section using the sidebar.
+`;
+      await fs.writeFile(indexPath, stubContent);
+      console.log(`Created category index: ${indexPath}`);
+    }
+  }
+
+  console.log(`\nDone. ${categoriesUsed.size} categories processed.`);
 }
 
 run().catch((err) => {
