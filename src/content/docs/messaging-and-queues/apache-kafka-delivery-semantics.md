@@ -53,6 +53,18 @@ Depending on how the producer and consumer are configured, three distinct guaran
 ---
 
 
+Kafka gives at-least-once by default; exactly-once comes from three layers on top: idempotent producers, idempotent consumers, and transactions. General concepts (idempotency, delivery semantics, idempotency keys, atomicity) are in Document.
+
+
+## 1. Where duplicates come from
+
+
+Every Kafka message passes through eight steps, and every delivery problem is a failure in the gap between two of them.
+
+
+![Screenshot_2026-11-03_at_9.12.32_PM.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dcd998d6-74fa-4953-9828-ede9147d94e1/e438defe-1714-4f6e-9747-f6653e1186c9/Screenshot_2026-11-03_at_9.12.32_PM.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB4664PTQR3IS%2F20261103%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20261103T224727Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjENT%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLXdlc3QtMiJHMEUCIQDQWu3HbS%2BYdlK3jmc%2FM0UGqOWUnnGWdPuTTPLYFhRDOAIgELedRsas4%2Fqv0Z6BZFLREpOXRaCJaxBz5JaEmwCoSPgqiAQInP%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAAGgw2Mzc0MjMxODM4MDUiDPEdRRlf0PGTrYJuLircA7bZ1Z7N4RuC79BzmiV8i%2Bq7Wqqfl1jWB8eJEC4ahYpaeZVcQsVwCH%2BNPE8LKFhAsSmWOtggzgGN6AiEO2X7GXfyr2YpzrhUazG46wvXHg04jqokoZ76jZJVruXeX6u7tfX%2BfoS8xFnRchjfBdHH3w7sJKO6ti14DIr5wuRfwhykdbSG759E%2BZ8Q0QmjOTfQfsaajfZlQpeqxcoAvjD2vdnwXnCXmuYYuaQ7vg2L7S5uJRbxuS%2Fi7nyp7rUHnW0U0m2iwmPg61Hu6zLCrOKE1qeiU6FSLM4dMrYPtzXRINQhRYrncr%2FUJbPjqFbAO5Q9BcNUC4L%2Fnc9rfLHsVPAUWRU4YbOHmlR93f8etQWEQp9WOQL0KIqwog8O%2FCody5og45WdWuCxb645k14CK46Daho4C1sL7rFjXrKPyA07ZcTNDBdaphXCyFrckoUf%2F5N2hDxgPsbY7zaDws9y%2BQskhDUDVr8OzBRzckJN3iMavfS3dp1j2A0xhS%2BWPf1uxIkJISqfzwUHMdtF4rqP1PE%2FvIGfBGJVNC788a97oG7wy3nw2xdvkkcQTHCkqoV8GdLgIjr2Uc3gSgMUEhHyI3dMgTcQxr2VP2xGZFWXSr5F%2Baao2HXSFUFqgzYqv5GKMOb9qNcGOqUBe85MwBB%2FtXSLTXW4N3ujgdgwvt6Drv8iwz2XBqcvqG8bMe%2BoeENnobiUaN%2FlzBh9ncCP%2F4hA%2Fs3x1QuYPQLFCdAk4DXEiwdIuvbhj0U9d9GaBV5vhhxTuAlD9oUzGBsie0g44KvE%2BMYOrem3qYHJvtUnlycsAr3IbQ%2FL0ZgKMh3mEEAlBDKLitLPKyiVQ0P8Bb55wl3%2FFAivC0AtXDTowroLllqI&X-Amz-Signature=82cfd015172cd71e9ed2082ac21a281395479aab329614483ba25817f21256b8&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject)
+
+
 ## 3. Fixing the Producer Side: Idempotent Producers
 
 
