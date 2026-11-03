@@ -22,6 +22,3 @@ There are two ways data is distributed across mltiple nodes:
 
 Note this is different from partition failures or partitioning → which is network failures between multiple nodes that need to communicate with each other 
 
-
-;l.xzhbg 
-
