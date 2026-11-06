@@ -105,7 +105,7 @@ Even a perfect hash function can’t fix this one: sometimes **one specific key*
 
 > **Concrete example:** Twitter/X partitions tweets by `user_id`. A hash function distributes user IDs perfectly evenly. But a celebrity with 100M followers generates orders of magnitude more read/write traffic on their _one_ partition than an average user’s partition — no hash function can fix this, because the skew is in the _data_, not the _key distribution_.
 
-**Practical fixes (application-level, not automatic):**
+**fdw2qPractical fixes (application-level, not automatic):**
 - **Key splitting** — append a small random suffix to hot keys specifically (e.g., `celebrity_id_1`, `celebrity_id_2`, …, `celebrity_id_10`) and spread that one logical entity’s writes across multiple physical partitions. Reads then have to merge results from all the split partitions — extra complexity, but only applied to the small number of keys that actually need it.
 - **Caching** — put a read-through cache (Redis) in front of known-hot keys so the partition itself doesn’t absorb the full read volume.
 - Some newer systems (e.g., recent Cassandra/ScyllaDB versions) detect hot partitions automatically and apply similar splitting under the hood — but the underlying problem and the mitigation shape is the same either way.
